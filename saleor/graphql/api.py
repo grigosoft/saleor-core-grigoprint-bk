@@ -1,3 +1,4 @@
+from ..plugins.grigoprint.schema import GrigoprintQueries, GrigoprintMutations
 from graphene_federation import build_schema
 
 from .account.schema import AccountMutations, AccountQueries
@@ -47,6 +48,8 @@ class Query(
     TranslationQueries,
     WarehouseQueries,
     WebhookQueries,
+    #grigo
+    GrigoprintQueries
 ):
     pass
 
@@ -73,6 +76,8 @@ class Mutation(
     ShopMutations,
     WarehouseMutations,
     WebhookMutations,
+    #grigo
+    GrigoprintMutations
 ):
     pass
 
