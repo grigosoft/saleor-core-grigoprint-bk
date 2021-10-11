@@ -11,5 +11,5 @@ class GrigoprintQueries(
 
 
 class GrigoprintMutations():
-    costumer_create_grigo = CustomerCreateGrigo.Field()
-    costumer_update_grigo = CustomerUpdateGrigo.Field()
+    customer_create_grigo = CustomerCreateGrigo.Field()
+    customer_update_grigo = CustomerUpdateGrigo.Field()
