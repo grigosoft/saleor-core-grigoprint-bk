@@ -16,7 +16,7 @@ class AccountQueries(graphene.ObjectType):
         filter=CustomerFilterInput(description="Filtering options for customers."),
         sort_by=UserSortingInput(description="Sort customers."),
         description="Look up a user by ID or email address.",
-        name = "users_grigo"
+        name = "customers_grigo"
     )
     client_grigo = graphene.Field(
         type.UserGrigo,
@@ -26,6 +26,7 @@ class AccountQueries(graphene.ObjectType):
         ),
         
         description="Look up a user by ID or email address.",
+        name = "client_grigo"
     )
 
     @staff_member_or_app_required
