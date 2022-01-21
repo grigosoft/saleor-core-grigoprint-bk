@@ -59,6 +59,7 @@ def resolve_digital_contents(_info):
 
 
 def resolve_product_by_id(info, id, channel_slug, requestor):
+    print("resolve product by id")
     return (
         models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug)
         .filter(id=id)
@@ -67,6 +68,7 @@ def resolve_product_by_id(info, id, channel_slug, requestor):
 
 
 def resolve_product_by_slug(info, product_slug, channel_slug, requestor):
+    print("resolve product by slug: ",product_slug)
     return (
         models.Product.objects.visible_to_user(requestor, channel_slug=channel_slug)
         .filter(slug=product_slug)
@@ -93,6 +95,7 @@ def resolve_products(info, requestor, channel_slug=None, **_kwargs) -> ChannelQs
 def resolve_variant_by_id(
     info, id, channel_slug, requestor, requestor_has_access_to_all
 ):
+    print("resolve_variant_by_id")
     visible_products = models.Product.objects.visible_to_user(
         requestor, channel_slug
     ).values_list("pk", flat=True)
@@ -128,6 +131,7 @@ def resolve_product_variant_by_sku(
 def resolve_product_variants(
     info, requestor_has_access_to_all, requestor, ids=None, channel_slug=None
 ) -> ChannelQsContext:
+    print("resolve_product_variants")
     visible_products = models.Product.objects.visible_to_user(requestor, channel_slug)
     qs = models.ProductVariant.objects.filter(product__id__in=visible_products)
 

@@ -1,5 +1,4 @@
 from graphene import relay
-from graphene.types import field
 from graphene_federation.entity import key
 from .....graphql.account.types import User, ObjectWithMetadata
 from .. import models
@@ -11,7 +10,8 @@ class UserGrigo(User):
         description = "Represents user data."
         interfaces = [relay.Node, ObjectWithMetadata]
         model = models.UserGrigo
-        fields = "__all__"
+        exclude = ["password"]
+        #fields = "__all__"
         #only_fields = [
         #    "date_joined",
         #    "default_billing_address",

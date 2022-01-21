@@ -3,7 +3,7 @@ from ....account.models import User
 from ....product.models import Product
 from django.db import models
 from django.db.models.fields.related import ForeignKey
-from ....order.models import OrderLine
+from ....order.models import Order, OrderLine
 from ....checkout.models import CheckoutLine
 
 
@@ -55,8 +55,13 @@ class Tessuto(models.Model):
 
 
 
-class CheckoutLinePersonalizzata(CheckoutLine):
-    padre = ForeignKey("CheckoutLinePersonalizzata", blank=True, null=True, related_name="figlio", on_delete=models.CASCADE)
+class CheckoutLinePadreFiglio(CheckoutLine):
+    padre = ForeignKey(CheckoutLine, related_name="checkout_line_figlio", on_delete=models.CASCADE)
+    figlio = ForeignKey(CheckoutLine, related_name="checkout_line_padre", on_delete=models.CASCADE)
+
+class OrderLinePadreFiglio(models.Model):
+    padre = ForeignKey(OrderLine, related_name="order_line_figlio", on_delete=models.CASCADE)
+    figlio = ForeignKey(OrderLine, related_name="order_line_padre", on_delete=models.CASCADE)
 
 class Personalizzazione(models.Model):
     # per riordini delle stesse personalizzazioni
@@ -84,10 +89,14 @@ class Personalizzazione(models.Model):
     finiture_frontend = models.JSONField()#scelte utente in frontend
     lavorazioni = models.JSONField()#copia della struttura delle tabelle
 
+
+def user_appena_arrivati_path(instance, filename):
+    return 'appena_arrivati/{0}/{2}'.format(instance.personalizzazione.utente, filename)
+def user_appena_arrivati_tmb_path(instance, filename):
+    return 'appena_arrivati/{0}/tmb_{2}'.format(instance.personalizzazione.utente, filename)
 class FileGrafico(models.Model):
     personalizzazione = ForeignKey(Personalizzazione, related_name="file",on_delete=models.CASCADE)
-    nome = models.TextField() #titolo aggiuntivo
-    file = models.FileField(upload_to="appena_arrivati", null=True, blank=True)
+    nome = models.TextField(null=True, blank=True) #titolo aggiuntivo
+    file = models.FileField(upload_to=user_appena_arrivati_path, null=True, blank=True)
     anteprima = models.FileField(upload_to="appena_arrivati", null=True, blank=True)
     quantita = models.PositiveIntegerField(default=1, null=False, blank=False)
-
