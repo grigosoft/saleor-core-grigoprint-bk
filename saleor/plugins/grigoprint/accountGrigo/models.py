@@ -16,7 +16,7 @@ class UserGrigo(User):
     #is_no_login = models.BooleanField(default=False) # sostituito per 
     #rappresentante
     is_rappresentante = models.BooleanField(default=False)
-    rappresentante = models.ForeignKey("UserGrigo", related_name="clienti", null=True,blank=True, on_delete=models.SET_NULL)
+    rappresentante = models.ForeignKey("self", related_name="clienti", null=True,blank=True, on_delete=models.SET_NULL)
     commissione = models.FloatField(default=0,null=False, blank=True)
     # dati azienda
     piva = models.TextField(null=True, blank=True, unique=True)

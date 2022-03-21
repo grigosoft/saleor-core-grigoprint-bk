@@ -1,7 +1,7 @@
 # richiamare in saleor.graphql.api
 
 
-from .accountGrigo.graphql.mutation import CustomerCreateGrigo, CustomerUpdateGrigo
+from .accountGrigo.graphql.mutation import CustomerCreateGrigo, CustomerUpdateGrigo, LoadDataFromDanea
 from .accountGrigo.graphql.schema import AccountQueries
 
 class GrigoprintQueries(
@@ -13,3 +13,4 @@ class GrigoprintQueries(
 class GrigoprintMutations():
     customer_create_grigo = CustomerCreateGrigo.Field()
     customer_update_grigo = CustomerUpdateGrigo.Field()
+    load_data_from_danea = LoadDataFromDanea.Field()

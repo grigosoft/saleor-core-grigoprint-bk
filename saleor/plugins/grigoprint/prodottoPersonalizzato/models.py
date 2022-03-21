@@ -52,6 +52,7 @@ class Tessuto(models.Model):
     descrizione = models.TextField()
     altezza = models.PositiveBigIntegerField()
     costo_ml = models.FloatField()
+    spreco_ml = models.FloatField()
 
 
 

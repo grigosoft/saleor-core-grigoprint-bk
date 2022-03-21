@@ -1,5 +1,7 @@
-from tokenize import String
 import graphene
+
+from .....graphql.core.mutations import BaseMutation
+from ..danea_firebird import import_anagrafica
 
 from .....checkout import AddressType
 
@@ -21,9 +23,51 @@ from .. import models
 from . import type
 
 ADDRESSES_FIELD = "addresses"
+RAPPRESENTANTE_FIELD = "rappresentante"
 
-class rappresentanteInput(graphene.InputObjectType):
-    id = graphene.String()
+
+def clean_account_grigo_input(cls, info, instance, data, cleaned_input):
+    addresses_data = data.pop(ADDRESSES_FIELD, None)
+    rappresentate_data = data.pop(RAPPRESENTANTE_FIELD, None)
+
+    # rappresentante
+    if rappresentate_data:
+        rapp = models.UserGrigo.objects.filter(email=rappresentate_data).first()
+        if rapp and rapp.is_rappresentante:
+            cleaned_input[RAPPRESENTANTE_FIELD] = rapp
+        else:
+            raise ValidationError(
+                {
+                    "rappresentante": ValidationError(
+                        "rappresentante non valido %s"%rappresentate_data, code="value", params={"rappresentante":rappresentate_data}
+                    )
+                })
+    # indirizzi
+    if addresses_data:
+        cleaned_addresses = []
+        for address_data in addresses_data:
+            address_data_cleaned = cls.validate_address(
+                address_data,
+                address_type=AddressType.SHIPPING,
+                instance=getattr(instance, SHIPPING_ADDRESS_FIELD),
+                info=info,
+            )
+            cleaned_addresses.append(address_data_cleaned)
+        cleaned_input[ADDRESSES_FIELD] = cleaned_addresses
+
+    if cleaned_input.get("sconto"):
+        if cleaned_input.get("sconto") not in range(0, 0.50):
+            raise ValidationError(
+                {
+                    "sconto": ValidationError(
+                        "Sconto da 0% e 50%", code="value", params={"sconto":cleaned_input.get("sconto")}
+                    )
+                })
+
+    return cleaned_input
+
+# class rappresentanteInput(graphene.InputObjectType):
+#     UserGrigo_id = graphene.String()
 
 class CustomerCreateGrigoInput(UserCreateInput):
     denominazione = graphene.String()
@@ -34,7 +78,7 @@ class CustomerCreateGrigoInput(UserCreateInput):
     #is_no_login = models.BooleanField(default=False) # sostituito per 
     #rappresentante
     is_rappresentante = graphene.Boolean()
-    rappresentante = rappresentanteInput()
+    rappresentante = graphene.String(description="email del rappresentate")
     commissione = graphene.Float()
     # dati azienda
     piva = graphene.String()
@@ -54,34 +98,25 @@ class CustomerCreateGrigoInput(UserCreateInput):
     coordinate_bancarie = graphene.String()
     listino = graphene.String()
     sconto = graphene.Float()
+            
     
+class CustomerCreateGrigo(CustomerCreate):
+    class Arguments:
+        input = CustomerCreateGrigoInput(
+            description="Fields required to create a customer.", required=True
+        )
+    class Meta:
+        description = "Creates a new customer."
+        exclude = ["password"]
+        permissions = (AccountPermissions.MANAGE_USERS,)
+        error_type_class = AccountError
+        error_type_field = "account_errors"
+        model = models.UserGrigo
+
     @classmethod
     def clean_input(cls, info, instance, data):
-        addresses_data = data.pop(ADDRESSES_FIELD, None)
         cleaned_input = super().clean_input(info, instance, data)
-
-        if addresses_data:
-            cleaned_addresses = []
-            for address_data in addresses_data:
-                address_data_cleaned = cls.validate_address(
-                    address_data,
-                    address_type=AddressType.SHIPPING,
-                    instance=getattr(instance, SHIPPING_ADDRESS_FIELD),
-                    info=info,
-                )
-                cleaned_addresses.append(address_data_cleaned)
-            cleaned_input[ADDRESSES_FIELD] = cleaned_addresses
-
-        if cleaned_input.get("sconto"):
-            if cleaned_input.get("sconto") not in range(0, 0.50):
-                raise ValidationError(
-                    {
-                        "sconto": ValidationError(
-                            "Sconto da 0% e 50%", code="value", params={"sconto":cleaned_input.get("sconto")}
-                        )
-                    })
-
-        return cleaned_input
+        return clean_account_grigo_input(cls, info, instance, data, cleaned_input)
 
     # @classmethod
     # @traced_atomic_transaction()
@@ -131,21 +166,6 @@ class CustomerCreateGrigoInput(UserCreateInput):
     #             info.context.plugins,
     #             channel_slug,
     #         )
-            
-    
-class CustomerCreateGrigo(CustomerCreate):
-    class Arguments:
-        input = CustomerCreateGrigoInput(
-            description="Fields required to create a customer.", required=True
-        )
-    class Meta:
-        description = "Creates a new customer."
-        exclude = ["password"]
-        permissions = (AccountPermissions.MANAGE_USERS,)
-        error_type_class = AccountError
-        error_type_field = "account_errors"
-        model = models.UserGrigo
-
     # @classmethod
     # def get_type_for_model(cls):
     #     return type.UserGrigo
@@ -180,3 +200,21 @@ class CustomerUpdateGrigo(CustomerUpdate):
         error_type_class = AccountError
         error_type_field = "account_errors"
 
+    @classmethod
+    def clean_input(cls, info, instance, data):
+        cleaned_input = super().clean_input(info, instance, data)
+        return clean_account_grigo_input(cls, info, instance, data, cleaned_input)
+
+class LoadDataFromDanea(BaseMutation):
+    class Arguments:
+        id_danea = graphene.String(required= False)
+    class Meta:
+        description = "Load anagrafica form danea"
+        #permissions = (AccountPermissions.MANAGE_STAFF,)
+        error_type_class = AccountError
+        error_type_field = "account_errors"
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        id = data["id_danea"]
+        import_anagrafica(id)

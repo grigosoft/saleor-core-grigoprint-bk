@@ -30,14 +30,24 @@ git checkout master
 git merge NOME-BRANCH-LAVORO
 
 # Uso saleor
-attivazione env `source venv/bin/activate`
+creazione env `python3 -m venv myvenv` ( fuori dalla cartella di lavoro saleor)
+attivazione env `source myvenv/bin/activate` ( fuori dalla cartella di lavoro saleor)
+installazione dipendenze `pip install -r requirements.txt`
+migrate DB `python manage.py migrate`
 run server `python manage.py runserver 0.0.0.0:8000`
+
+# test saleor
+install py_dev for install dependencies on venv `sudo dnf install python-devel`
+install dependencies for test all saleor `python -m pip install -r requirements_dev.txt`
+run test on grigoprint plugins `pytest saleor/plugins/grigoprint`
+run test on all saleor `py.test`
 
 
 
 ## idea di base
 ### necessità
 serve una gestione per i prodotti personalizzati
+extra info per l'utente
 ### soluzione
 aggiungo le informazioni alle linee di checout e ordine, cosi da avere delle personalizzazioni uniche legate al prodotto comprato
 Estendo classi base e poi le richiamo tramite GraphQL:
