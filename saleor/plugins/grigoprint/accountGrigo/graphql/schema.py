@@ -1,4 +1,5 @@
 import graphene
+
 from .....core.exceptions import PermissionDenied
 from .....core.permissions import AccountPermissions
 from .....core.tracing import traced_resolver
@@ -6,8 +7,8 @@ from .....graphql.core.utils import from_global_id_or_error
 from .....graphql.utils import get_user_or_app_from_context
 
 from .....graphql.core.validators import validate_one_of_args_is_in_query
-from .....graphql.account.schema import CustomerFilterInput
-from .....graphql.account.sorters import UserSortingInput
+from .sorters import UserGrigoSortingInput
+from .filters import CustomerGrigoFilterInput
 
 from .....graphql.core.fields import FilterInputConnectionField
 
@@ -39,8 +40,8 @@ class AccountQueries(graphene.ObjectType):
     
     customers_grigo = FilterInputConnectionField(
         type.UserGrigo,
-        filter=CustomerFilterInput(description="Filtering options for customers."),
-        sort_by=UserSortingInput(description="Sort customers."),
+        filter=CustomerGrigoFilterInput(description="Filtering options for customers."),
+        sort_by=UserGrigoSortingInput(description="Sort customers."),
         description="Lista completa di utenti",
         name = "customers_grigo"
     )
@@ -56,7 +57,7 @@ class AccountQueries(graphene.ObjectType):
     )
     rappresentanti = FilterInputConnectionField(
         type.UserGrigo,
-        sort_by=UserSortingInput(description="Sort customers."),
+        sort_by=UserGrigoSortingInput(description="Sort customers."),
         
         description="Listcompleta dei rappresentanti",
         name = "rappresentanti_grigo"

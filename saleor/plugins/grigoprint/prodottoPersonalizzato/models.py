@@ -57,16 +57,15 @@ class Tessuto(models.Model):
 
 
 class CheckoutLinePadreFiglio(CheckoutLine):
-    padre = ForeignKey(CheckoutLine, related_name="checkout_line_figlio", on_delete=models.CASCADE)
-    figlio = ForeignKey(CheckoutLine, related_name="checkout_line_padre", on_delete=models.CASCADE)
-
-class OrderLinePadreFiglio(models.Model):
-    padre = ForeignKey(OrderLine, related_name="order_line_figlio", on_delete=models.CASCADE)
-    figlio = ForeignKey(OrderLine, related_name="order_line_padre", on_delete=models.CASCADE)
+    padre = ForeignKey(CheckoutLine, blank=True, null=True, related_name="checkout_line_figlio", on_delete=models.CASCADE)
+    
+class OrderLinePadreFiglio(OrderLine):
+    padre = ForeignKey(OrderLine, blank=True, null=True, related_name="order_line_figlio", on_delete=models.SET_NULL)
+    padre_name = models.TextField(blank=True, null=True)
 
 class Personalizzazione(models.Model):
     # per riordini delle stesse personalizzazioni
-    personalizzazione_precedente = ForeignKey("Personalizzazione", related_name="personalizzazione_sucessiva",on_delete=models.CASCADE)
+    personalizzazione_precedente = ForeignKey("Personalizzazione", blank=True, null=True, related_name="personalizzazione_sucessiva",on_delete=models.SET_NULL)
     
     # quando elimino una linea di checout elimino la personalizzazione
     # quando elimino ilcheckout di proposito elimino la personalizzazione
@@ -76,12 +75,12 @@ class Personalizzazione(models.Model):
     # Se entrambi null è una bozza
     # Mai entrambi NON NULL
     # se uno valorizzato NON è una bozza
-    checkout_line = ForeignKey(CheckoutLine, blank=True, null=True, related_name="personalizzazione_checkout_line", on_delete=models.SET_NULL)
+    checkout_line = ForeignKey(CheckoutLine, blank=True, null=True, related_name="personalizzazione_checkout_line", on_delete=models.CASCADE)
     order_line = ForeignKey(OrderLine, blank=True, null=True, related_name="personalizzazione_order_line", on_delete=models.CASCADE)
     # per bozze (no)
     nome = models.TextField(default="bozza")
     utente = ForeignKey(User, blank=False, null=True, on_delete=models.CASCADE)
-    prodotto = ForeignKey(Product, blank=False, null=True, on_delete=models.CASCADE)
+    prodotto = ForeignKey(Product, blank=False, null=True, on_delete=models.SET_NULL)
     # personalizzazione
     data_scadenza = models.DateField()
 
