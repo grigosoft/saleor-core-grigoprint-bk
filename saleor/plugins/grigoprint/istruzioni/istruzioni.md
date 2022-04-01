@@ -60,3 +60,8 @@ GraphQL: | gql.saleor.products(model.Product) ---> gql.grigo.products(model.Prdo
 
 
 la prima volta che si compila un app bisogna forzare il nome dell'app per fargli creare la cartella
+
+# librerie da installare
+
+pip install fdb
+sudo dnf install libfbclient2

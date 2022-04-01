@@ -1,6 +1,6 @@
 import graphene
 
-from .....graphql.core.mutations import BaseMutation
+from .....graphql.core.mutations import BaseMutation, ModelMutation
 from ..danea_firebird import import_anagrafica
 
 from .....checkout import AddressType
@@ -205,11 +205,13 @@ class CustomerUpdateGrigo(CustomerUpdate):
         cleaned_input = super().clean_input(info, instance, data)
         return clean_account_grigo_input(cls, info, instance, data, cleaned_input)
 
-class LoadDataFromDanea(BaseMutation):
+class LoadDataFromDanea(ModelMutation):
     class Arguments:
         id_danea = graphene.String(required= False)
     class Meta:
         description = "Load anagrafica form danea"
+        model = models.UserGrigo
+        exclude = ["password", "email"]
         #permissions = (AccountPermissions.MANAGE_STAFF,)
         error_type_class = AccountError
         error_type_field = "account_errors"
@@ -217,4 +219,7 @@ class LoadDataFromDanea(BaseMutation):
     @classmethod
     def perform_mutation(cls, _root, info, **data):
         id = data["id_danea"]
-        import_anagrafica(id)
+        instance = cls.get_instance(info, **data)
+        cls.clean_instance(info, instance)
+        import_anagrafica(id) ## mia
+        return cls.success_response(instance)

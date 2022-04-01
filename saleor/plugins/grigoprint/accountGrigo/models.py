@@ -9,9 +9,10 @@ from ....account.models import PossiblePhoneNumberField, User
 
 class UserGrigo(User):
     denominazione = models.TextField(null=True, blank=True)
-    id_danea = models.TextField(null=True, blank=True)
+    id_danea = models.TextField(null=True, blank=True, unique=True)
 
-    phone = PossiblePhoneNumberField(blank=True, default="", db_index=True)
+    tel = PossiblePhoneNumberField(null=True,blank=True, default="", db_index=True)
+    cell = PossiblePhoneNumberField(null=True,blank=True, default="", db_index=True)
     
     #is_no_login = models.BooleanField(default=False) # sostituito per 
     #rappresentante
@@ -25,12 +26,13 @@ class UserGrigo(User):
     sdi = models.TextField(null=True, blank=True)
     #Pubblica amministrazione
     rif_ammin = models.TextField(null=True, blank=True)
-    split_payment = models.BooleanField(default=False)
+    split_payment = models.BooleanField(null=True,default=False)
 
 
 
     iva = models.TextField(null=True, blank=True)
     porto = models.TextField(null=True, blank=True) # franco, assegnato, ecc
+    vettore = models.TextField(null=True, blank=True) # franco, assegnato, ecc
     pagamento = models.TextField(null=True, blank=True)
     coordinate_bancarie = models.TextField(null=True, blank=True)
     listino = models.TextField(null=True, blank=True)

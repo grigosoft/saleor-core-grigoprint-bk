@@ -47,12 +47,12 @@ class statoLavorazione(models.Model):
 
 class Tessuto(models.Model):
     nome = models.TextField(null=False, blank=False)
-    composizione = models.TextField()
-    grammatura = models.PositiveBigIntegerField()
-    descrizione = models.TextField()
-    altezza = models.PositiveBigIntegerField()
-    costo_ml = models.FloatField()
-    spreco_ml = models.FloatField()
+    composizione = models.TextField(null=False, blank=False)
+    grammatura = models.PositiveIntegerField(null=False, blank=False)
+    descrizione = models.TextField(null=True, blank=True)
+    altezza = models.PositiveIntegerField(null=False, blank=False)
+    costo_ml = models.FloatField(null=False, blank=False)
+    spreco_ml = models.FloatField(null=False, blank=False)
 
 
 
