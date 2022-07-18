@@ -65,3 +65,11 @@ la prima volta che si compila un app bisogna forzare il nome dell'app per fargli
 
 pip install fdb
 sudo dnf install libfbclient2
+
+
+### running test saleor
+python -m pip install -r requirements_dev.txt 
+se da errore "pywatchman" -- >  pip install python-dev-tools
+
+# avvio test
+py.test

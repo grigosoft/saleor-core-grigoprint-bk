@@ -12,6 +12,7 @@ class UserGrigoSortField(graphene.Enum):
     SCONTO = ["sconto", "denominazione", "pk"]
     EMAIL = ["email"]
     ORDER_COUNT = ["order_count", "email"]
+    PROVINCIA = ["default_billing_address__city_area","default_billing_address__city","denominazione"]
 
     @property
     def description(self):

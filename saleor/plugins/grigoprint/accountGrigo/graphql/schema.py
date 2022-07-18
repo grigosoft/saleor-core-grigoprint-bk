@@ -8,7 +8,7 @@ from .....graphql.utils import get_user_or_app_from_context
 
 from .....graphql.core.validators import validate_one_of_args_is_in_query
 from .sorters import UserGrigoSortingInput
-from .filters import CustomerGrigoFilterInput
+from .filters import CustomerExtraFilterInput
 
 from .....graphql.core.fields import FilterInputConnectionField
 
@@ -22,78 +22,88 @@ def resolve_user(info, id=None, email=None):
     requester = get_user_or_app_from_context(info.context)
     if requester:
         filter_kwargs = {}
+        requesterExtra = models.UserExtra.objects.userExtrafromUser(requester)
+        if requesterExtra:
+            print("requester è un oggetto UserExtra")
+            if requesterExtra.is_rappresentante:############################
+                print("requester è un rappresentante")
+                filter_kwargs["rappresentante"] = requesterExtra
         if id:
-            _model, filter_kwargs["pk"] = from_global_id_or_error(id, type.UserGrigo)
+            _model, filter_kwargs["pk"] = from_global_id_or_error(id, type.UserExtra)
         if email:
             filter_kwargs["email"] = email
         if requester.has_perms(
             [AccountPermissions.MANAGE_STAFF, AccountPermissions.MANAGE_USERS]
         ):
-            return models.UserGrigo.objects.filter(**filter_kwargs).first()
+            return models.UserExtra.objects.filter(**filter_kwargs).first() # tutti
         if requester.has_perm(AccountPermissions.MANAGE_STAFF):
-            return models.UserGrigo.objects.staff().filter(**filter_kwargs).first()
+            return models.UserExtra.objects.staff().filter(**filter_kwargs).first()
         if requester.has_perm(AccountPermissions.MANAGE_USERS):
-            return models.UserGrigo.objects.customers().filter(**filter_kwargs).first()
+            return models.UserExtra.objects.customers().filter(**filter_kwargs).first()
     return PermissionDenied()
     
 class AccountQueries(graphene.ObjectType):
     
-    customers_grigo = FilterInputConnectionField(
-        type.UserGrigo,
-        filter=CustomerGrigoFilterInput(description="Filtering options for customers."),
+    clienti = FilterInputConnectionField(
+        type.UserExtra,
+        filter=CustomerExtraFilterInput(description="Filtering options for customers."),
         sort_by=UserGrigoSortingInput(description="Sort customers."),
-        description="Lista completa di utenti",
-        name = "customers_grigo"
+        description="Lista completa di utenti, in base a chi è loggato",
+        name = "clienti"
     )
-    client_grigo = graphene.Field(
-        type.UserGrigo,
-        id=graphene.Argument(graphene.ID, description="ID of the user."),
+    cliente = graphene.Field(
+        type.UserExtra,
+        id=graphene.Argument(graphene.ID, description="ID dell'utente"),
         email=graphene.Argument(
-            graphene.String, description="Email address of the user."
+            graphene.String, description="Email dell'utente"
         ),
         
         description="Look up a user by ID or email address.",
-        name = "client_grigo"
-    )
-    rappresentanti = FilterInputConnectionField(
-        type.UserGrigo,
-        sort_by=UserGrigoSortingInput(description="Sort customers."),
-        
-        description="Listcompleta dei rappresentanti",
-        name = "rappresentanti_grigo"
+        name = "cliente"
     )
 
-    clienti_rappresentante = graphene.Field(
-        type.UserGrigo,
-        id=graphene.Argument(graphene.ID, description="ID of the user."),
-        email=graphene.Argument(
-            graphene.String, description="Email address of the user."
-        ),
+    # clienti_rappresentante = graphene.Field(
+    #     type.UserGrigo,
+    #     id=graphene.Argument(graphene.ID, description="ID of the user."),
+    #     email=graphene.Argument(
+    #         graphene.String, description="Email address of the user."
+    #     ),
         
-        description="Lista completa dei clienti di un rappresentante",
-        name = "clienti_rappresentante"
-    )
+    #     description="Lista completa dei clienti di un rappresentante",
+    #     name = "clienti_rappresentante"
+    # )
     
 
     @staff_member_or_app_required
     #@permission_required(AccountPermissions.MANAGE_USERS)
-    def resolve_customers_grigo(self, _info, **kwargs):
-        return models.UserGrigo.objects.all()
+    def resolve_clienti(self, info, **kwargs):
+        requester = get_user_or_app_from_context(info.context)
+        if requester:
+            print(requester)
+            #requesterExtra = models.UserExtra.objects.filter(email="corbella@bandieregrigolini.it").first() # per testare i rappresentanti
+            requesterExtra = models.UserExtra.objects.userExtrafromUser(requester)
+            print("to user extra --> ",requesterExtra)
+            # se rappresentante
+            if requesterExtra:
+                print("requester è un oggetto UserExtra")
+                if requesterExtra.is_rappresentante:
+                    print("requester è un rappresentante")
+                    return requesterExtra.clienti
+            else:
+                return models.UserExtra.objects.all()
+        return PermissionDenied()
 
-    def resolve_client_grigo(self, info, id=None, email=None):
+    @staff_member_or_app_required
+    def resolve_cliente(self, info, id=None, email=None):
         validate_one_of_args_is_in_query("id", id, "email", email)
         return resolve_user(info, id, email)
 
-    @staff_member_or_app_required
-    def resolve_rappresentanti(self, _info, **kwargs):
-        return models.UserGrigo.objects.filter(is_rappresentante=True)
-
-    def resolve_clienti_rappresentante(self, info, id=None, email=None):
-        validate_one_of_args_is_in_query("id", id, "email", email)
-        user = resolve_user(info, id, email)
-        if user.isRappresentante:
-            return user.clienti
-        else:
-            raise PermissionDenied("Questo utente non è un rappresentante")
+    # def resolve_clienti_rappresentante(self, info, id=None, email=None):
+    #     validate_one_of_args_is_in_query("id", id, "email", email)
+    #     user = resolve_user(info, id, email)
+    #     if user.isRappresentante:
+    #         return user.clienti
+    #     else:
+    #         return PermissionDenied("Questo utente non è un rappresentante")
    
     

@@ -1,35 +1,32 @@
-from graphene import relay
+from graphene import relay, List
 from graphene_federation.entity import key
+
+from .....graphql.core.connection import CountableDjangoObjectType
 from .....graphql.account.types import User, ObjectWithMetadata
 from .. import models
 
 @key("id")
+class Contatto(CountableDjangoObjectType):
+    class Meta:
+        description = "Represents user contacts"
+        interfaces = [relay.Node,]
+        model = models.Contatto
+        fields = "__all__"
+@key("id")
 @key("email")
-class UserGrigo(User):
+class UserExtra(User):
+    contatti = List(Contatto, description="List of all user's contacts.")
     class Meta:
         description = "Represents user data."
         interfaces = [relay.Node, ObjectWithMetadata]
-        model = models.UserGrigo
+        model = models.UserExtra
         exclude = ["password"]
+        convert_choices_to_enum = ["porto","vettore","tipo_cliente"]
         #fields = "__all__"
         #only_fields = [
         #    "date_joined",
-        #    "default_billing_address",
-        #    "default_shipping_address",
-        #    "email",
-        #    "first_name",
-        #    "id",
-        #    "is_active",
-        #    "is_staff",
-        #    "last_login",
-        #    "last_name",
-        #    "note",
-        #    "rappresentante",
-        #    "commissione",
-        #    "piva",
-        #    "cf",
-        #    "sdi",
-        #    "split_payment",
-        #    "sconto",
-        #    "rappresentante"
         #]
+
+    @staticmethod
+    def resolve_contatti(root: models.UserExtra, _info, **_kwargs):
+        return root.contatti.all()
