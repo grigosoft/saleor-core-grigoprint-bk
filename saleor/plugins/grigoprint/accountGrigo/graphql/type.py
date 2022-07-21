@@ -1,4 +1,5 @@
-from graphene import relay, List
+import graphene
+from graphene_django import DjangoObjectType
 from graphene_federation.entity import key
 
 from .....graphql.core.connection import CountableDjangoObjectType
@@ -9,16 +10,33 @@ from .. import models
 class Contatto(CountableDjangoObjectType):
     class Meta:
         description = "Represents user contacts"
-        interfaces = [relay.Node,]
+        interfaces = [graphene.relay.Node,]
         model = models.Contatto
         fields = "__all__"
+class Listino(DjangoObjectType):
+    class Meta:
+        description = "Listino"
+        interfaces = []
+        model = models.Listino
+        fields = "__all__"
+@key("id")
+@key("denominazione")
+class Iva(DjangoObjectType):
+    class Meta:
+        description = "Listino"
+        interfaces = []
+        model = models.Iva
+        fields = "__all__"
+
 @key("id")
 @key("email")
 class UserExtra(User):
-    contatti = List(Contatto, description="List of all user's contacts.")
+    contatti = graphene.List(Contatto, description="List of all user's contacts.")
+    iva = graphene.Field(Iva, description="iva di default di questo cliente")
+    listino = graphene.Field(Listino, description="listino di questo cliente")
     class Meta:
         description = "Represents user data."
-        interfaces = [relay.Node, ObjectWithMetadata]
+        interfaces = [graphene.relay.Node, ObjectWithMetadata]
         model = models.UserExtra
         exclude = ["password"]
         convert_choices_to_enum = ["porto","vettore","tipo_cliente"]
@@ -30,3 +48,9 @@ class UserExtra(User):
     @staticmethod
     def resolve_contatti(root: models.UserExtra, _info, **_kwargs):
         return root.contatti.all()
+    @staticmethod
+    def resolve_iva(root: models.UserExtra, _info, **_kwargs):
+        return root.iva
+    @staticmethod
+    def resolve_listino(root: models.UserExtra, _info, **_kwargs):
+        return root.listino

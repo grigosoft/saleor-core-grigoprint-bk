@@ -26,4 +26,12 @@ class Notifica(models.Model):
     scadenza = models.DateTimeField(blank=False, null=False,)
     titolo = models.TextField()
     testo = models.TextField()
-    mittente  = models.ForeignKey(UserExtra, related_name="contatti", null=True,blank=True, on_delete=models.CASCADE)
+    mittente  = models.ForeignKey(UserExtra, related_name="contatti", null=False,blank=False, on_delete=models.SET_NULL)
+
+class Ferie(models.Model):
+    utente = models.ForeignKey(UserExtra, on_delete=models.CASCADE, related_name="ferie")
+    data_inizio = models.DateField(null=False,)
+    data_fine = models.DateField(null=True, default = data_inizio)
+    ore = models.IntegerField(null=False, default = 0)
+    approvate = models.BooleanField(default=False)
+    info = models.TextField(blank=True, default="")

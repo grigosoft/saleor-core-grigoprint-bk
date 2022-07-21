@@ -43,8 +43,8 @@ class Iva(models.Model):
     valore = models.FloatField()
     info = models.TextField(blank=True, default="")
 class Listino(models.Model):
-    denominazione = models.CharField(max_length=256, blank=False,null=True, unique=True)
-    ricarico = models.FloatField()
+    denominazione = models.CharField(max_length=256, blank=False,null=False, unique=True)
+    ricarico = models.FloatField(default=0)
     info = models.TextField(blank=True, default="")
 
 class UserExtraManager(UserManager):
@@ -105,45 +105,6 @@ class UserExtra(User):
     listino = models.ForeignKey(Listino, null=True,blank=True, on_delete=models.SET_NULL)
     sconto = models.FloatField(default=0,null=False, blank=True)
 
-# class UserExtra(models.Model):
-#     user = models.OneToOneField(User, related_name="extra",parent_link=True, on_delete=models.CASCADE)
-#     denominazione = models.TextField(null=True, blank=True)
-#     id_danea = models.TextField(null=True, blank=True, unique=True)
-#     tipo_cliente = models.CharField(max_length=9,
-#                   choices=TIPO_CLIENTE_CHOICES,
-#                   default=TIPO_CLIENTE_DEFAULT)
-
-#     tel = PossiblePhoneNumberField(null=True,blank=True, default="", db_index=True)
-#     cell = PossiblePhoneNumberField(null=True,blank=True, default="", db_index=True)
-    
-#     #is_no_login = models.BooleanField(default=False) # sostituito per 
-#     #rappresentante
-#     is_rappresentante = models.BooleanField(default=False)
-#     rappresentante = models.ForeignKey(User, related_name="clienti2", null=True,blank=True, on_delete=models.SET_NULL)
-#     #nome_rappresentante = models.CharField(max_length=256, blank=True) # nel caso si cancellasse il riferimento esterno al rappresentante
-#     #commissione = models.FloatField(default=0,null=False, blank=True)
-#     # dati azienda
-#     piva = models.TextField(null=True, blank=True, unique=True)
-#     cf = models.TextField(null=True, blank=True, unique=True)
-#     pec = models.EmailField(null=True, blank=True)
-#     sdi = models.TextField(null=True, blank=True)
-#     #Pubblica amministrazione
-#     rif_ammin = models.TextField(null=True, blank=True)
-#     split_payment = models.BooleanField(null=True,default=False)
-
-#     iva = models.ForeignKey(Iva, null=True,blank=True, on_delete=models.SET_NULL)
-#     porto = models.CharField(null=True, blank=True, max_length=3,
-#                   choices=PORTO_CHOICES,
-#                   default=PORTO_DEFAULT)
-#     vettore = models.CharField(null=True, blank=True, max_length=2,
-#                   choices=VETTORE_CHOICES,
-#                   default=VETTORE_DEFAULT)
-#     pagamento = models.TextField(null=True, blank=True, default = "Bonifico anticipato")
-#     coordinate_bancarie = models.TextField(null=True, blank=True)
-#     listino = models.ForeignKey(Listino, null=True,blank=True, on_delete=models.SET_NULL)
-#     sconto = models.FloatField(default=0,null=False, blank=True)
-
-
 
 ###
 # tabella contatti aggiuntivi di un cliente
@@ -154,4 +115,4 @@ class Contatto(models.Model):
     denominazione = models.CharField(max_length=256, blank=True)
     phone = PossiblePhoneNumberField(blank=True, default="", db_index=True)
 
-    
+

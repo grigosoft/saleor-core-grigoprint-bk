@@ -25,9 +25,11 @@ per creare branch e spostarsi li `git checkout -b nome`
 
 selezione branch di lavoro `git checkout nome`
 
-merge dopo push completo del brench di lavoro
-git checkout master
-git merge NOME-BRANCH-LAVORO
+# merge dopo push completo del brench di lavoro
+`git checkout master`
+`git pull origin master`
+`git merge test`
+`git push origin master`
 
 # Uso saleor
 creazione env `python3 -m venv myvenv` ( fuori dalla cartella di lavoro saleor)

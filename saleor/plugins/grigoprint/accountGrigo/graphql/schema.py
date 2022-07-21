@@ -72,7 +72,16 @@ class AccountQueries(graphene.ObjectType):
     #     description="Lista completa dei clienti di un rappresentante",
     #     name = "clienti_rappresentante"
     # )
-    
+    aliquote_iva = graphene.Field(
+        type.Iva,
+        description="lista delle aliquote iva disponibili",
+        name = "aliquoteIva"
+    )
+    listini = graphene.Field(
+        type.Iva,
+        description="listini disponibili",
+        name = "listini"
+    )
 
     @staff_member_or_app_required
     #@permission_required(AccountPermissions.MANAGE_USERS)
@@ -106,4 +115,11 @@ class AccountQueries(graphene.ObjectType):
     #     else:
     #         return PermissionDenied("Questo utente non è un rappresentante")
    
-    
+    @staff_member_or_app_required
+    def resolve_aliquote_iva(self, info, **kwargs):
+        return models.Iva.objects.all()
+        
+    @staff_member_or_app_required
+    def resolve_listini(self, info, **kwargs):
+        return models.Listino.objects.all()
+

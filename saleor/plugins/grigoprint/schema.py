@@ -1,7 +1,7 @@
 # richiamare in saleor.graphql.api
 
 
-from .accountGrigo.graphql.mutation import ClienteCrea, ClienteAggiorna, IndirizzoAggiorna, IndirizzoCrea, LoadDataFromDanea, StaffAggiorna, StaffCrea, ContattoCrea, ContattoAggiorna
+from .accountGrigo.graphql.mutation import ClienteCrea, ClienteAggiorna, EliminaUtenti, IndirizzoAggiorna, IndirizzoCrea, LoadDataFromDanea, StaffAggiorna, StaffCrea, ContattoCrea, ContattoAggiorna
 from .accountGrigo.graphql.schema import AccountQueries
 # from .prima_configurazione_saleor import PrimaConfigurazioneSaleor
 class GrigoprintQueries(
@@ -20,4 +20,5 @@ class GrigoprintMutations():
     contatto_aggiorna = ContattoAggiorna.Field()
     indirizzo_crea = IndirizzoCrea.Field()
     indirizzo_aggiorna = IndirizzoAggiorna.Field()
-    load_data_from_danea = LoadDataFromDanea.Field()
+    zz_load_data_from_danea = LoadDataFromDanea.Field()
+    zz_elimina_utenti = EliminaUtenti.Field()

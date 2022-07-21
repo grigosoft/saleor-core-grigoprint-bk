@@ -1,3 +1,4 @@
+from email.mime import base
 from email.policy import default
 from secrets import choice
 import graphene
@@ -311,21 +312,36 @@ class IndirizzoAggiorna(AddressUpdate):
         error_type_class = AccountError
         error_type_field = "account_errors"
 
-class LoadDataFromDanea(ModelMutation):
+class LoadDataFromDanea(BaseMutation):
     class Arguments:
         id_danea = graphene.String(required= False)
     class Meta:
         description = "Load anagrafica form danea"
-        model = models.UserExtra
-        exclude = ["password", "email"]
-        #permissions = (AccountPermissions.MANAGE_STAFF,)
+        permissions = (AccountPermissions.MANAGE_STAFF,)
         error_type_class = AccountError
         error_type_field = "account_errors"
 
     @classmethod
     def perform_mutation(cls, _root, info, **data):
         id = data["id_danea"]
-        instance = cls.get_instance(info, **data)
-        cls.clean_instance(info, instance)
         import_anagrafica(id) ## mia
-        return cls.success_response(instance)
+        return cls()
+class EliminaUtenti(BaseMutation):
+    class Arguments:
+        pass
+    class Meta:
+        description = "elimina tutti i clienti. non gli amministratori"
+        permissions = (AccountPermissions.MANAGE_STAFF,)
+        error_type_class = AccountError
+        error_type_field = "account_errors"
+
+    @classmethod
+    def perform_mutation(cls, _root, info, **data):
+        ##
+        for cliente in models.UserExtra.objects.customers():
+            if not cliente.is_staff:
+                cliente.porto = None
+                cliente.vettore = None
+                cliente.save()
+
+        return cls()
