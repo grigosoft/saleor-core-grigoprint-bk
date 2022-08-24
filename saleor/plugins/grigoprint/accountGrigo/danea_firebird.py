@@ -182,6 +182,7 @@ def inserisci_dati_user(usr, row):
             usr.default_billing_address.street_address_1 = row[21] #'"Indirizzo"',
             usr.default_billing_address.postal_code = row[22] #'"Cap"',
             usr.default_billing_address.country_area = row[23] #'"Prov"',
+            usr.default_billing_address.city_area = ""
             usr.default_billing_address.city = row[24] #'"Citta"',
             if not usr.default_billing_address in usr.addresses.all():
                 usr.addresses.add(usr.default_billing_address)
@@ -197,8 +198,9 @@ def inserisci_dati_user(usr, row):
             usr.default_billing_address = fatturazione
 
     if (not usr.piva) and usr.cf:
-        usr.tipoCliente = models.TIPO_CLIENTE_CHOICES["P"]
-        
+        usr.tipoCliente = "P"
+    else:
+        usr.tipoCliente = "A"
 
 def crea_user(row):
     print("crea: ", row[4])

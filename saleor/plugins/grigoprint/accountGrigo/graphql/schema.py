@@ -15,6 +15,7 @@ from .....graphql.core.fields import FilterInputConnectionField
 from .....graphql.decorators import staff_member_or_app_required
 
 from .. import models
+from django.contrib.auth import models as auth_models
 from . import type
 
 @traced_resolver
@@ -22,6 +23,7 @@ def resolve_user(info, id=None, email=None):
     requester = get_user_or_app_from_context(info.context)
     if requester:
         filter_kwargs = {}
+        #requesterExtra = requester.extra # perche non funziona????
         requesterExtra = models.UserExtra.objects.userExtrafromUser(requester)
         if requesterExtra:
             print("requester è un oggetto UserExtra")
@@ -72,31 +74,35 @@ class AccountQueries(graphene.ObjectType):
     #     description="Lista completa dei clienti di un rappresentante",
     #     name = "clienti_rappresentante"
     # )
-    aliquote_iva = graphene.Field(
+    aliquote_iva = graphene.List(
         type.Iva,
         description="lista delle aliquote iva disponibili",
         name = "aliquoteIva"
     )
-    listini = graphene.Field(
+    listini = graphene.List(
         type.Iva,
         description="listini disponibili",
         name = "listini"
     )
-
+    # gruppi = graphene.List(
+    #     type.Gruppo,
+    #     description="gruppi di permessi",
+    #     name = "gruppi"
+    # )
     @staff_member_or_app_required
     #@permission_required(AccountPermissions.MANAGE_USERS)
     def resolve_clienti(self, info, **kwargs):
         requester = get_user_or_app_from_context(info.context)
         if requester:
-            print(requester)
+#            print(requester)
             #requesterExtra = models.UserExtra.objects.filter(email="corbella@bandieregrigolini.it").first() # per testare i rappresentanti
             requesterExtra = models.UserExtra.objects.userExtrafromUser(requester)
-            print("to user extra --> ",requesterExtra)
+#            print("to user extra --> ",requesterExtra)
             # se rappresentante
             if requesterExtra:
-                print("requester è un oggetto UserExtra")
+#                print("requester è un oggetto UserExtra")
                 if requesterExtra.is_rappresentante:
-                    print("requester è un rappresentante")
+#                    print("requester è un rappresentante")
                     return requesterExtra.clienti
             else:
                 return models.UserExtra.objects.all()
@@ -122,4 +128,7 @@ class AccountQueries(graphene.ObjectType):
     @staff_member_or_app_required
     def resolve_listini(self, info, **kwargs):
         return models.Listino.objects.all()
+    # @staff_member_or_app_required
+    # def resolve_gruppi(self, info, **kwargs):
+    #     return auth_models.Group.objects.all()
 

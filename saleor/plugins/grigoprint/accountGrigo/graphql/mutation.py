@@ -115,7 +115,8 @@ class ClienteInput(UserCreateInput):
     rif_ammin = graphene.String()
     split_payment = graphene.Boolean(default=False)
 
-    addresses = graphene.List(AddressInput)
+    # addresses = graphene.List(AddressInput)
+    # contatti = graphene.List(ContattoInput)
 
     iva = graphene.String()
     porto = graphene.String(choice = models.PORTO_CHOICES, default = models.PORTO_DEFAULT) # franco, assegnato, ecc
@@ -153,7 +154,7 @@ class ClienteCrea(CustomerCreate):
                 if billing[c]:
                     billing_vuoto = False
         if billing_vuoto:
-            data.pop(BILLING_ADDRESS_FIELD, None)
+            data.pop(BILLING_ADDRESS_FIELD, None) #elimino da data BILLING cosi non da errore di field obbligatori vuoti
         cleaned_input = super().clean_input(info, instance, data)
 
         return clean_account_extra_input(cls, info, instance, data, cleaned_input)
@@ -326,7 +327,7 @@ class LoadDataFromDanea(BaseMutation):
         id = data["id_danea"]
         import_anagrafica(id) ## mia
         return cls()
-class EliminaUtenti(BaseMutation):
+class AgisciSuUtenti(BaseMutation):
     class Arguments:
         pass
     class Meta:

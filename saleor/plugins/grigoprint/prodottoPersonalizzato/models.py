@@ -1,9 +1,8 @@
 
-from ....account.models import User
 from ....product.models import Product
 from django.db import models
 from django.core.validators import MinValueValidator
-from ....order.models import Order, OrderLine
+from ....order.models import OrderLine
 from ....checkout.models import CheckoutLine
 from versatileimagefield.fields import VersatileImageField
 
@@ -14,23 +13,24 @@ from versatileimagefield.fields import VersatileImageField
 #    CAD = 'C', _('Cad')
 #    PERCENTUALE = '%', _('Percentuale')
 
-class TipoProdottoPersonalizzato(models.Model):
-    nome = models.TextField(null=False, blank=False)
+# class TipoProdottoPersonalizzato(models.Model):
+#     nome = models.TextField(null=False, blank=False)
 
 
 class Particolare(models.Model):
-    nome = models.TextField(null=False, blank=False)
+    nome = models.TextField(null=False, blank=False, unique=True)
     descrizione = models.TextField()
-    costo_cad = models.FloatField()
+    costo_cad = models.FloatField(default=0)
     tempo_realizzazione = models.PositiveSmallIntegerField()
     tempo_avvio = models.PositiveSmallIntegerField()
     foto = VersatileImageField(upload_to="foto-particolari", blank=True, null=True)
 
 class Finitura (models.Model):
-    nome = models.TextField(null=False, blank=False)
+    nome = models.TextField(null=False, blank=False, unique=True)
     descrizione = models.TextField()
-    tipo_prezzo = models.CharField(max_length=1)
-    prezzo_ml = models.FloatField()
+    # tipo_prezzo = models.CharField(max_length=1)
+    costo_ml = models.FloatField(default=0)
+    costo_cad = models.FloatField(default=0)
     tempo_realizzazione = models.PositiveSmallIntegerField()
     tempo_avvio = models.PositiveSmallIntegerField()
     foto = VersatileImageField(upload_to="foto-finiture", blank=True, null=True)
@@ -38,9 +38,10 @@ class Finitura (models.Model):
 ### solo per compialre i combo box in frontend e calcolare il prezzo,
 # poi nel prodotto verrà memorizzato in json
 class ParticolareFinitura(models.Model):
-    finitura = models.ForeignKey(Finitura, blank=False, null=False, related_name="particolare", on_delete=models.CASCADE)
-    particolare = models.ForeignKey(Particolare, blank=False, null=False, related_name="finitura", on_delete=models.CASCADE)
+    finitura = models.ForeignKey(Finitura, blank=False, null=False, related_name="particolare_finitura", on_delete=models.CASCADE)
+    particolare = models.ForeignKey(Particolare, blank=False, null=False, related_name="particolare_finitura", on_delete=models.CASCADE)
     descrizione = models.TextField(blank=True, null=True)
+    misura_default = models.FloatField(blank=True, null=True)
 
 ###
 #tabella per momorizzare le finiture di default dei vari prodotti
@@ -52,48 +53,49 @@ class FinituraDefault(models.Model):
     foto = VersatileImageField(upload_to="foto-finiture", blank=True, null=True)
 
 class Tessuto(models.Model):
-    nome = models.TextField(null=False, blank=False)
-    composizione = models.TextField(null=False, blank=False)
+    nome = models.TextField(null=False, blank=False, unique=True)
+    composizione = models.TextField(null=False, blank=False, default="100% poliestere")
     grammatura = models.PositiveIntegerField(null=False, blank=False)
     descrizione = models.TextField(null=True, blank=True)
     altezza = models.PositiveIntegerField(null=False, blank=False)
     costo_ml = models.FloatField(null=False, blank=False)
-    spreco_ml = models.FloatField(null=False, blank=False)
+    avviamento_ml = models.FloatField(null=False, blank=False, default=0)
     # ml ora
-    velocita_stampa = models.PositiveSmallIntegerField(null=False, blank=False)
-    velocita_calandra = models.PositiveSmallIntegerField(null=False, blank=False)
-    velocita_cucitura = models.PositiveSmallIntegerField(null=False, blank=False) # pecentuale di difficoltà
+    velocita_stampa = models.PositiveSmallIntegerField(null=False, blank=False, default=1)
+    velocita_calandra = models.PositiveSmallIntegerField(null=False, blank=False, default=1)
+    velocita_cucitura = models.PositiveSmallIntegerField(null=False, blank=False, default=1) # pecentuale di difficoltà
 
 
 
 class LineaCarrello(CheckoutLine):
-    padre = models.ForeignKey(CheckoutLine, blank=True, null=True, related_name="checkout_line_figlio", on_delete=models.CASCADE)
+    checkoutline_ptr = models.OneToOneField(CheckoutLine, on_delete=models.CASCADE, related_name="extra", parent_link=True, primary_key=True, serialize=False)
+    padre = models.ForeignKey("LineaCarrello", blank=True, null=True, related_name="figlio", on_delete=models.CASCADE)
     
 class LineaOrdine(OrderLine):
-    padre = models.ForeignKey(OrderLine, blank=True, null=True, related_name="order_line_figlio", on_delete=models.CASCADE)
+    orderline_ptr = models.OneToOneField(OrderLine, on_delete=models.CASCADE, related_name="extra", parent_link=True, primary_key=True, serialize=False)
+    padre = models.ForeignKey("LineaOrdine", blank=True, null=True, related_name="figlio", on_delete=models.CASCADE)
 
 class Personalizzazione(models.Model):
     # per riordini delle stesse personalizzazioni
-    personalizzazione_precedente = models.ForeignKey("Personalizzazione", blank=True, null=True, related_name="personalizzazione_sucessiva",on_delete=models.SET_NULL)
+    personalizzazione_precedente = models.ForeignKey("Personalizzazione", blank=True, null=True, related_name="personalizzazione_successiva",on_delete=models.SET_NULL)
     
     # quando elimino una linea di checout elimino la personalizzazione
     # quando elimino ilcheckout di proposito elimino la personalizzazione
     # quando elimino la linea d'ordine elimino la personalizzazione
     # QUANDO COMPLETO IL CHECKOUT NON ELIMINO, passo la personalizzazione da checkout_linea a ordine_linea
     
-    # Se entrambi null è una bozza
+    # Mai entrambi NULL
     # Mai entrambi COLLEGATI
-    # se uno valorizzato NON è una bozza
-    checkout_line = models.ForeignKey(CheckoutLine, blank=True, null=True, related_name="personalizzazione_checkout_line", on_delete=models.CASCADE) # bisogna capiarla e ributtarla dentro l'ordine nuovo
-    order_line = models.ForeignKey(OrderLine, blank=True, null=True, related_name="personalizzazione_order_line", on_delete=models.CASCADE)
-    # per bozze (no)
+    linea_carrello = models.ForeignKey(LineaCarrello, blank=True, null=True, related_name="personalizzazione", on_delete=models.CASCADE) # bisogna capiarla e ributtarla dentro l'ordine nuovo
+    linea_ordine = models.ForeignKey(LineaOrdine, blank=True, null=True, related_name="personalizzazione", on_delete=models.CASCADE)
+    
     titolo = models.TextField(default="")
-    #utente = models.ForeignKey(User, blank=False, null=True, on_delete=models.CASCADE)
-    prodotto = models.ForeignKey(Product, blank=False, null=True, on_delete=models.SET_NULL)
+    
     # personalizzazione
     data_scadenza = models.DateField()
 
     tessuto = models.ForeignKey(Tessuto, blank=True, null=True, on_delete=models.SET_NULL)
+    nome_tessuto = models.TextField(default="")
     misure = models.JSONField()
 
     finiture = models.JSONField()#scelte utente in frontend
@@ -106,7 +108,14 @@ class Personalizzazione(models.Model):
     # angolo_superiore_destro = models.ForeignKey(ParticolareFinitura, related_name="files",on_delete=models.SET_NULL)
     # angolo_inferiore_sinsitro = models.ForeignKey(ParticolareFinitura, related_name="files",on_delete=models.SET_NULL)
     # angolo_inferiore_destro = models.ForeignKey(ParticolareFinitura, related_name="files",on_delete=models.SET_NULL)
+    log_prezzo = models.TextField(default="")
     
+    def get_prodotto(self):
+        if self.order_line:
+            return self.order_line.variant.product
+        elif self.checkout_line:
+            return self.checkout_line.variant.product
+        return None
 
 def user_appena_arrivati_path(instance, filename):
     #if instance.personalizzazione.
